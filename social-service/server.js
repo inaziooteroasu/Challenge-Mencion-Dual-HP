@@ -1,19 +1,23 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3').verbose();
+const cors = require('cors'); // Agregar esta línea
 const app = express();
-const port = 3000;
+const port = 3001;
+
+// Middleware para permitir CORS
+app.use(cors()); // Agregar esta línea
 
 // Middleware para parsear JSON
 app.use(bodyParser.json());
 
 // Conectar a la base de datos SQLite
-const db = new sqlite3.Database(':memory:');
+const db = new sqlite3.Database('./database.db');
 
 // Crear tablas
 db.serialize(() => {
-  db.run("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT)");
-  db.run("CREATE TABLE friendships (id INTEGER PRIMARY KEY AUTOINCREMENT, requester_id INTEGER, receiver_id INTEGER, status TEXT)");
+  db.run("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT)");
+  db.run("CREATE TABLE IF NOT EXISTS friendships (id INTEGER PRIMARY KEY AUTOINCREMENT, requester_id INTEGER, receiver_id INTEGER, status TEXT)");
 });
 
 // Endpoint de registro de usuario
