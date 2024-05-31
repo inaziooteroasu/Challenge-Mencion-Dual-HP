@@ -6,6 +6,8 @@ import Friends from './Friends';
 import Requests from './Requests';
 import Search from './Search';
 import EditProfile from './EditProfile';
+import './App.css'; // Importa el archivo CSS
+
 
 function App() {
   return (

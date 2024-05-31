@@ -54,7 +54,43 @@
   cursor: pointer;
   font-size: 16px;
 }
+.buttonProfile {
+  width: 100%;
+  padding: 10px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-right: 10px;
+
+}
 
 .button:hover {
   background-color: #218838;
+}
+.buttonProfile:hover {
+  background-color: #218838;
+}
+.buttonContainer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.buttonContainer .buttonProfile:last-child {
+  margin-right: 0;
+}
+.buttonback {
+  width: 20%;
+  padding: 10px;
+  background-color: #3728a7;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+.buttonback:hover {
+  background-color: #215188;
 }
