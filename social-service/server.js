@@ -35,6 +35,24 @@ app.post('/signup', (req, res) => {
   });
   stmt.finalize();
 });
+// Endpoint de inicio de sesión
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).send('Username and password are required');
+  }
+  const stmt = db.prepare("SELECT * FROM users WHERE username = ? AND password = ?");
+  stmt.get(username, password, (err, row) => {
+    if (err) {
+      return res.status(500).send('Internal server error');
+    }
+    if (!row) {
+      return res.status(400).send('Invalid username or password');
+    }
+    res.status(200).send({ id: row.id, username: row.username });
+  });
+  stmt.finalize();
+});
 
 // Ruta raíz básica
 app.get('/', (req, res) => {
