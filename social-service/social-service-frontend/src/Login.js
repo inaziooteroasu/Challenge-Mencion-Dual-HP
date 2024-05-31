@@ -14,13 +14,22 @@ const Login = () => {
     } catch (error) {
       alert('Error: ' + error.response.data);
     }
-    
+  };
+  const handleSubmit2 = async (event) => {
+    event.preventDefault();
+    try {
+      const response = await axios.post('http://localhost:3001/signup', { username, password });
+      console.log(response);
+      alert(`User ${response.data.username} created successfully!`);
+    } catch (error) {
+      alert('Error: ' + error.response.data);
+    }
   };
 
   return (
     <div className="container">
     <div className="formContainer">
-      <h2 className="heading">Log In</h2>
+      <h2 className="heading">Social Service</h2>
       <form onSubmit={handleSubmit}>
         <div className="formGroup">
           <label className="label">Username:</label>
@@ -42,10 +51,16 @@ const Login = () => {
             className="input"
           />
         </div>
-        <button type="submit" className="button">Log In</button>
-        
+        <div className="formGroup">
+            <button type="submit" className="button">Log In</button>
+        </div>
 
       </form>
+      <form onSubmit={handleSubmit2}>
+
+      <button type="submit" className="button">Sign Up</button>
+      </form>
+
     </div>
   </div>
 );
