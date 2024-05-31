@@ -53,6 +53,15 @@ app.post('/login', (req, res) => {
   });
   stmt.finalize();
 });
+app.get('/profile', (req, res) => {
+  // Aquí sacar los valores de la base de datos
+  const user = {
+    username: 'UsuarioEjemplo',
+    bio: 'Esta es la biografía del usuario ejemplo',
+    password: '1234'
+  };
+  res.json(user);
+});
 
 // Ruta raíz básica
 app.get('/', (req, res) => {
