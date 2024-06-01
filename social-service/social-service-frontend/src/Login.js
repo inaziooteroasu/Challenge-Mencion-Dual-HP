@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './Signup.css'; // Importa el archivo CSS
+import './Signup.css'; // Importa el archivo CSS ( se llama Signup pero tiene el toddos los js, luego ya lo ordenadre)
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -12,10 +12,10 @@ const Login = () => {
     event.preventDefault();
     try {
       const response = await axios.post('http://localhost:3001/login', { username, password });
-      alert(`Welcome ${response.data.username}`);
+      //alert(`Welcome ${response.data.username}`);
       navigate('/profile');
     } catch (error) {
-      alert('Error: ' + error.response.data);
+      alert('Error: ' + error.response.data.error);
     }
   };
 
@@ -23,11 +23,11 @@ const Login = () => {
     event.preventDefault();
     try {
       const response = await axios.post('http://localhost:3001/signup', { username, password });
-      console.log(response);
-      alert(`User ${response.data.username} created successfully!`);
+      console.log(response); //punt o de control
+      //alert(`User ${response.data.username} created successfully!`);
       navigate('/profile');
     } catch (error) {
-      alert('Error: ' + error.response.data);
+      alert('Error: ' + error.response.data.error);
     }
   };
 
