@@ -6,7 +6,7 @@ const app = express();
 const port = 3001;
 
 // Middleware para permitir CORS
-app.use(cors()); /
+app.use(cors()); 
 
 // Middleware para parsear JSON
 app.use(bodyParser.json());
@@ -14,11 +14,19 @@ app.use(bodyParser.json());
 // Conectar a la base de datos SQLite
 const db = new sqlite3.Database('./database.db');
 
-// Crear tablas
+//Crear tablas
 db.serialize(() => {
   db.run("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT)");
   db.run("CREATE TABLE IF NOT EXISTS friendships (id INTEGER PRIMARY KEY AUTOINCREMENT, requester_id INTEGER, receiver_id INTEGER, status TEXT)");
 });
+db.serialize(() => {
+  db.run('CREATE TABLE IF NOT EXISTS user (username TEXT, password TEXT, bio TEXT)');
+  db.run('CREATE TABLE IF NOT EXISTS friendship_requests (requester TEXT, requestee TEXT)');
+  db.run('CREATE TABLE IF NOT EXISTS friendships (user1 TEXT, user2 TEXT)');
+  db.run('INSERT INTO user (username, password, bio) VALUES (?, ?, ?)', ['UsuarioEjemplo', 'password', 'Esta es la biografía del usuario ejemplo']);
+});
+
+
 
 // Endpoint de registro de usuario
 app.post('/signup', (req, res) => {
@@ -42,6 +50,7 @@ app.post('/signup', (req, res) => {
   });
   stmt.finalize();
 });
+
 // Endpoint de inicio de sesión
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
@@ -60,10 +69,101 @@ app.post('/login', (req, res) => {
   });
   stmt.finalize();
 });
+
+// Endpoint de peticion de amistad
+app.post('/friend-request', (req, res) => {
+  const { requester, requestee } = req.body;
+
+  if (requester === requestee) {
+    return res.status(400).json({ error: 'You cannot send a friend request to yourself... find someone else' });
+  }
+
+  db.get('SELECT * FROM friendship_requests WHERE requester = ? AND requestee = ?', [requester, requestee], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: 'Error checking friend request' });
+    }
+    if (row) {
+      return res.status(400).json({ error: 'Friend request already sent, wait for the response' });
+    }
+
+    db.run('INSERT INTO friendship_requests (requester, requestee) VALUES (?, ?)', [requester, requestee], function(err) {
+      if (err) {
+        return res.status(500).json({ error: 'Error sending friend request' });
+      }
+      res.json({ message: 'Friend request sent to ' + requestee});
+    });
+  });
+});
+
+// Endpoint de peticion de aceptar o rechazar solicitud
+app.post('/accept-friend', (req, res) => {
+  const { requester, requestee } = req.body;
+
+  db.get('SELECT * FROM friendship_requests WHERE requester = ? AND requestee = ?', [requester, requestee], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: 'Error checking friend request' });
+    }
+    if (!row) {
+      return res.status(400).json({ error: 'No friend request found' });
+    }
+
+    db.run('INSERT INTO friendships (user1, user2) VALUES (?, ?)', [requester, requestee], function(err) {
+      if (err) {
+        return res.status(500).json({ error: 'Error accepting friend request' });
+      }
+
+      db.run('DELETE FROM friendship_requests WHERE requester = ? AND requestee = ?', [requester, requestee], function(err) {
+        if (err) {
+          return res.status(500).json({ error: 'Error deleting friend request' });
+        }
+        res.json({ message: 'Friend request accepted' });
+      });
+    });
+  });
+});
+
+app.post('/decline-friend', (req, res) => {
+  const { requester, requestee } = req.body;
+
+  db.get('SELECT * FROM friendship_requests WHERE requester = ? AND requestee = ?', [requester, requestee], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: 'Error checking friend request' });
+    }
+    if (!row) {
+      return res.status(400).json({ error: 'No friend request found' });
+    }
+
+    db.run('DELETE FROM friendship_requests WHERE requester = ? AND requestee = ?', [requester, requestee], function(err) {
+      if (err) {
+        return res.status(500).json({ error: 'Error deleting friend request' });
+      }
+      res.json({ message: 'Friend request declined' });
+    });
+  });
+});
+
+
+
+
+// Endpoint de lista de amigos
+
+app.get('/friends', (req, res) => {
+  const username = req.query.username;
+
+  db.all('SELECT user2 AS friend FROM friendships WHERE user1 = ? UNION SELECT user1 AS friend FROM friendships WHERE user2 = ?', [username, username], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: 'Error fetching friends' });
+    }
+    res.json(rows);
+  });
+});
+
+
+
 app.get('/profile', (req, res) => {
   // Aquí sacar los valores de la base de datos
   const user = {
-    username: 'UsuarioEjemplo',
+    username: 'inazio',
     bio: 'Esta es la biografía del usuario ejemplo',
     password: '1234'
   };
