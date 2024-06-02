@@ -59,7 +59,7 @@ const Requests = () => {
                     <li key={index}>
                       {request.requester}
                       <button className="button" style={{ marginTop: "10px" }} onClick={() => handleAccept(request.requester)}>Accept</button>
-                      <button className="button" style={{ marginTop: "10px" }} onClick={() => handleDecline(request.requester)}>Decline</button>
+                      <button className="button" style={{ marginTop: "10px", marginBottom: "10px" }} onClick={() => handleDecline(request.requester)}>Decline</button>
                     </li>
                   ))}
                 </ul>

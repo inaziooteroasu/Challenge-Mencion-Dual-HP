@@ -28,6 +28,8 @@ const Profile = () => {
     }
   }, [user]);
 
+ 
+
   if (!user) {
     return (
       <div className="containerProfile">
@@ -39,6 +41,11 @@ const Profile = () => {
       </div>
     );
   }
+
+  const maskPassword = (password) => {
+    return '*'.repeat(password.length);
+  };
+
 
   return (
     <div className="containerProfile">

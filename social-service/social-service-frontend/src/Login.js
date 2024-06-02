@@ -26,11 +26,13 @@ const Login = () => {
     }
   };
 
-  const handleSubmit2 = async (event) => { // para el
+  const handleSubmit2 = async (event) => { // para el signup
     event.preventDefault();
     try {
       const response = await axios.post('http://localhost:3001/signup', { username, password });
       console.log(response); //punt o de control
+      login(response.data);
+
       //alert(`User ${response.data.username} created successfully!`);
       navigate('/profile');
     } catch (error) {

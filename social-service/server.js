@@ -21,28 +21,33 @@ db.serialize(() => {
   db.run("CREATE TABLE IF NOT EXISTS friendships (id INTEGER PRIMARY KEY AUTOINCREMENT, user1 TEXT, user2 TEXT)");
 
   // ejeemplo
-  db.run('INSERT INTO users (username, password, bio) VALUES (?, ?, ?)', ['UsuarioEjemplo1', 'password123', 'Esta es la biografía del usuario de ejemplo']);
+ // db.run('INSERT INTO users (username, password, bio) VALUES (?, ?, ?)', ['UsuarioEjemplo1', 'password123', 'Esta es la biografía del usuario de ejemplo']);
 });
 
 
 
 // Endpoint de registro de usuario
 app.post('/signup', (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, bio } = req.body;
   if (!username || !password) {
     return res.status(400).send('Username and password are required');
   }
   if (!/^[a-zA-Z0-9]{5,10}$/.test(username)) {
     return res.status(400).json({ error: 'Username must be 5 to 10 alphanumeric characters.' });
   }
-
   if (!/^[a-zA-Z0-9]{8,12}$/.test(password)) {
     return res.status(400).json({ error: 'Password must be 8 to 12 alphanumeric characters.' });
   }
-  const stmt = db.prepare("INSERT INTO users (username, password) VALUES (?, ?)");
-  stmt.run(username, password, function(err) {
+
+
+
+  const stmt = db.prepare("INSERT INTO users (username, password, bio) VALUES (?, ?, ?)");
+  stmt.run(username, password, bio || 'Default bio.', function(err) {
     if (err) {
-      return res.status(400).json({error:'Username already exists'});
+      if (err.code === 'SQLITE_CONSTRAINT') {
+        return res.status(400).json({ error: 'Username already exists' });
+      }
+      return res.status(500).json({ error: 'Internal server error' });
     }
     res.status(201).send({ id: this.lastID, username });
   });
@@ -72,10 +77,24 @@ app.post('/login', (req, res) => {
 app.post('/friend-request', (req, res) => {
   const { requester, requestee } = req.body;
 
+
+    // Verificar que no sea uno mismo
+
   if (requester === requestee) {
-    return res.status(400).json({ error: 'You cannot send a friend request to yourself... find someone else' });
+    return res.status(400).json({ error: 'You cannot send a friend request to yourself... find someone else.' });
   }
 
+  // Verificar si los usuarios ya son amigos
+  db.get('SELECT * FROM friendships WHERE (user1 = ? AND user2 = ?) OR (user1 = ? AND user2 = ?)', [requester, requestee, requestee, requester], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: 'Error checking existing friendship' });
+    }
+    if (row) {
+      return res.status(400).json({ error: 'You are already friends with this user' });
+    }
+    
+
+  // Verificar si ya se ha enviado una solicitud de amistad
   db.get('SELECT * FROM friendship_requests WHERE requester = ? AND requestee = ?', [requester, requestee], (err, row) => {
     if (err) {
       return res.status(500).json({ error: 'Error checking friend request' });
@@ -83,15 +102,30 @@ app.post('/friend-request', (req, res) => {
     if (row) {
       return res.status(400).json({ error: 'Friend request already sent, wait for the response' });
     }
+      // Verificar si el requestee existe en la tabla users
+      db.get('SELECT * FROM users WHERE username = ?', [requestee], (err, user) => {
+        if (err) {
+          return res.status(500).json({ error: 'Error checking user existence' });
+        }
+        if (!user) {
+          return res.status(404).json({ error: 'The requested user does not exist' });
+        }
+      
 
-    db.run('INSERT INTO friendship_requests (requester, requestee) VALUES (?, ?)', [requester, requestee], function(err) {
-      if (err) {
-        return res.status(500).json({ error: 'Error sending friend request' });
-      }
-      res.json({ message: 'Friend request sent to ' + requestee});
+      
+      
+      // Insertar nueva solicitud de amistad
+      db.run('INSERT INTO friendship_requests (requester, requestee) VALUES (?, ?)', [requester, requestee], function(err) {
+        if (err) {
+          return res.status(500).json({ error: 'Error sending friend request' });
+        }
+        res.json({ message: 'Friend request sent to ' + requestee });
+      });
+     });
     });
   });
 });
+
 
 
 
@@ -187,6 +221,25 @@ app.get('/profile', (req, res) => {
     res.json(row);
   });
 });
+
+// // Endpoint de edicion de perfile
+// app.post('/editprofile', (req, res) => {
+//   const { username, password } = req.body;
+//   if (!username || !password) {
+//     return res.status(400).send('Username and password are required');
+//   }
+//   const stmt = db.prepare("SELECT * FROM users WHERE username = ? AND password = ?");
+//   stmt.get(username, password, (err, row) => {
+//     if (err) {
+//       return res.status(500).json({error:'Internal server error'});
+//     }
+//     if (!row) {
+//       return res.status(400).json({error:'Invalid username or password'});
+//     }
+//     res.status(200).send({ id: row.id, username: row.username });
+//   });
+//   stmt.finalize();
+// });
 
 // Ruta raíz básica
 app.get('/', (req, res) => {

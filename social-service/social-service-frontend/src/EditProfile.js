@@ -2,30 +2,29 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './Signup.css'; // Importa el archivo CSS
 import { useNavigate } from 'react-router-dom';
-
+import { useAuth } from './AuthContext';
 
 const EditProfile = () => {
 
-  const [user, setUser] = useState({});
+  const [userDetails, setUserDetails] = useState({});
   const navigate = useNavigate(); // Definer navigate usando useNavigate
+  const { user } = useAuth();
 
   useEffect(() => {
-    // Aquí 
+    if (user) {
     
+      const fetchUserData = async () => {
+        try {
+          const response = await axios.get(`http://localhost:3001/profile?username=${user.username}`);
+          setUserDetails(response.data);
+        } catch (error) {
+          console.error('Error fetching user data', error);
+        }
+      };
 
-    
-    const fetchUserData = async () => {
-      try {
-        const username = 'UsuarioEjemplo'; 
-        const response = await axios.get('http://localhost:3001/profile');
-        setUser(response.data);
-      } catch (error) {
-        console.error('Error fetching user data', error);
-      }
-    };
-
-    fetchUserData();
-  }, []);
+      fetchUserData();
+    }
+  }, [user]);
 
   return (
 
@@ -38,8 +37,8 @@ const EditProfile = () => {
 
             <input
                   type="text"
-                  value={user.username}
-                  onChange={(e) => setUser({ ...user, username: e.target.value })}
+                  value={userDetails.username}
+                  //onChange={(e) => setUser({ ...user, username: e.target.value })}
                   className="input"
             />
   
@@ -48,8 +47,8 @@ const EditProfile = () => {
               <label className="label">Bio: </label>
               <input
                   type="text"
-                  value={user.bio}
-                  onChange={(e) => setUser({ ...user, bio: e.target.value })}
+                  value={userDetails.bio}
+                 // onChange={(e) => setUser({ ...user, bio: e.target.value })}
                   className="input"
             />
 
@@ -58,8 +57,8 @@ const EditProfile = () => {
               <label className="label">Password: </label>
               <input
                   type="text"
-                  value={user.password}
-                  onChange={(e) => setUser({ ...user, password: e.target.value })}
+                  value={userDetails.password}
+                  //onChange={(e) => setUser({ ...user, password: e.target.value })}
                   className="input"
             />
 
