@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './Signup.css'; // Importa el archivo CSS
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
 
 const Search = () => {
 
   const [requestee, setRequestee] = useState('');
-  const requester = 'UsuarioEjemplo';
+  const { user } = useAuth();
+
+  const requester = user.username;
   const navigate = useNavigate(); // Define navigate usando useNavigate
 
   const handleSubmit = async (event) => {

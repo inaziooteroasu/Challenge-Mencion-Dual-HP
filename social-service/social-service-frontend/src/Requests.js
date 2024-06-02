@@ -2,30 +2,32 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './Signup.css'; // Importa el archivo CSS
 import { useNavigate } from 'react-router-dom';
-
+import { useAuth } from './AuthContext';
 
 const Requests = () => {
 
   const [requests, setRequests] = useState([]);
-  const username = 'inazio'; 
+  const { user } = useAuth();
   const navigate = useNavigate(); // Define navigate usando useNavigate
 
   useEffect(() => {
-    const fetchFriendRequests = async () => {
-      try {
-        const response = await axios.get(`http://localhost:3001/friend-requests?username=${username}`);
-        setRequests(response.data);
-      } catch (error) {
-        console.error('Error fetching friend requests', error);
-      }
-    };
+    if (user) {
+      const fetchFriendRequests = async () => {
+        try {
+          const response = await axios.get(`http://localhost:3001/friend-requests?username=${user.username}`);
+          setRequests(response.data);
+        } catch (error) {
+          console.error('Error fetching friend requests', error);
+        }
+      };
 
-    fetchFriendRequests();
-  }, [username]);
+      fetchFriendRequests();
+    }
+  }, [user]);
 
   const handleAccept = async (requester) => {
     try {
-      const response = await axios.post('http://localhost:3001/accept-friend', { requester, requestee: username });
+      const response = await axios.post('http://localhost:3001/accept-friend', { requester, requestee: user.username });
       alert(response.data.message);
       setRequests(requests.filter(request => request.requester !== requester));
     } catch (error) {
@@ -35,7 +37,7 @@ const Requests = () => {
 
   const handleDecline = async (requester) => {
     try {
-      const response = await axios.post('http://localhost:3001/decline-friend', { requester, requestee: username });
+      const response = await axios.post('http://localhost:3001/decline-friend', { requester, requestee: user.username });
       alert(response.data.message);
       setRequests(requests.filter(request => request.requester !== requester));
     } catch (error) {

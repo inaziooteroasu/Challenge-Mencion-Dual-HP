@@ -2,16 +2,23 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './Signup.css'; // Importa el archivo CSS ( se llama Signup pero tiene el toddos los js, luego ya lo ordenadre)
+import { useAuth } from './AuthContext';
+
 
 const Login = () => {
+
+  const { login } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event) => { //para el login
     event.preventDefault();
     try {
       const response = await axios.post('http://localhost:3001/login', { username, password });
+      login(response.data);
+
+      
       //alert(`Welcome ${response.data.username}`);
       navigate('/profile');
     } catch (error) {
@@ -19,7 +26,7 @@ const Login = () => {
     }
   };
 
-  const handleSubmit2 = async (event) => {
+  const handleSubmit2 = async (event) => { // para el
     event.preventDefault();
     try {
       const response = await axios.post('http://localhost:3001/signup', { username, password });

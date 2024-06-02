@@ -16,14 +16,12 @@ const db = new sqlite3.Database('./database.db');
 
 //Crear tablas
 db.serialize(() => {
-  db.run("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT)");
-  db.run("CREATE TABLE IF NOT EXISTS friendships (id INTEGER PRIMARY KEY AUTOINCREMENT, requester_id INTEGER, receiver_id INTEGER, status TEXT)");
-});
-db.serialize(() => {
-  db.run('CREATE TABLE IF NOT EXISTS user (username TEXT, password TEXT, bio TEXT)');
-  db.run('CREATE TABLE IF NOT EXISTS friendship_requests (requester TEXT, requestee TEXT)');
-  db.run('CREATE TABLE IF NOT EXISTS friendships (user1 TEXT, user2 TEXT)');
-  db.run('INSERT INTO user (username, password, bio) VALUES (?, ?, ?)', ['UsuarioEjemplo', 'password', 'Esta es la biografía del usuario ejemplo']);
+  db.run("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT, bio TEXT)");
+  db.run("CREATE TABLE IF NOT EXISTS friendship_requests (id INTEGER PRIMARY KEY AUTOINCREMENT, requester TEXT, requestee TEXT)");
+  db.run("CREATE TABLE IF NOT EXISTS friendships (id INTEGER PRIMARY KEY AUTOINCREMENT, user1 TEXT, user2 TEXT)");
+
+  // ejeemplo
+  db.run('INSERT INTO users (username, password, bio) VALUES (?, ?, ?)', ['UsuarioEjemplo1', 'password123', 'Esta es la biografía del usuario de ejemplo']);
 });
 
 
@@ -177,13 +175,17 @@ app.get('/friends', (req, res) => {
 
 
 app.get('/profile', (req, res) => {
-  // Aquí sacar los valores de la base de datos
-  const user = {
-    username: 'inazio',
-    bio: 'Esta es la biografía del usuario ejemplo',
-    password: '1234'
-  };
-  res.json(user);
+  const { username } = req.query;
+
+  db.get('SELECT username, bio, password FROM users WHERE username = ?', [username], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: 'Error fetching user profile' });
+    }
+    if (!row) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(row);
+  });
 });
 
 // Ruta raíz básica

@@ -2,12 +2,15 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './Signup.css'; // Importa el archivo CSS
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
 
 const Friends = () => {
 
   const [friends, setFriends] = useState([]);
-  const username = 'UsuarioEjemplo';
+  const { user } = useAuth();
+
+  const username = user.username;
   const navigate = useNavigate(); // Define navigate usando useNavigate
 
   useEffect(() => {
