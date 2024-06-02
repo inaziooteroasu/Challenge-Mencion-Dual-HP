@@ -95,6 +95,22 @@ app.post('/friend-request', (req, res) => {
   });
 });
 
+
+
+// Endpoint para obtener solicitudes de amistad pendientes
+app.get('/friend-requests', (req, res) => {
+  const username = req.query.username;
+
+  db.all('SELECT requester FROM friendship_requests WHERE requestee = ?', [username], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: 'Error fetching friend requests' });
+    }
+    res.json(rows);
+  });
+});
+
+
+
 // Endpoint de peticion de aceptar o rechazar solicitud
 app.post('/accept-friend', (req, res) => {
   const { requester, requestee } = req.body;

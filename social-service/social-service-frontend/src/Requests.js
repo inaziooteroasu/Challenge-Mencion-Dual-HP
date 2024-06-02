@@ -21,7 +21,7 @@ const Requests = () => {
     };
 
     fetchFriendRequests();
-  }, []);
+  }, [username]);
 
   const handleAccept = async (requester) => {
     try {
@@ -51,20 +51,19 @@ const Requests = () => {
             {requests.length === 0 ? (
                 <p className="label">No friend requests</p>
               ) : (
+                
                 <ul>
                   {requests.map((request, index) => (
                     <li key={index}>
                       {request.requester}
-                      <button className="button" onClick={() => handleAccept(request.requester)}>Accept</button>
-                      <button className="button" onClick={() => handleDecline(request.requester)}>Decline</button>
+                      <button className="button" style={{ marginTop: "10px" }} onClick={() => handleAccept(request.requester)}>Accept</button>
+                      <button className="button" style={{ marginTop: "10px" }} onClick={() => handleDecline(request.requester)}>Decline</button>
                     </li>
                   ))}
                 </ul>
               )}
 
-            <div className="formGroup">
-                <p className="label">Contenido Request</p>
-            </div>
+
             <button className="buttonback" onClick={() => navigate('/profile')}>BACK</button>
 
         </div>
